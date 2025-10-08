@@ -26,7 +26,7 @@ object UpdateManager {
 
     val currentVersion: Version = UpdateManager::class.java
         .getResourceAsStream("/META-INF/MANIFEST.MF")?.use { stream ->
-            java.util.jar.Manifest(stream).mainAttributes.getValue("packwiz-bootstrap-version")
+            java.util.jar.Manifest(stream).mainAttributes.getValue("Version")
         }?.let { Version.fromString(it) } ?: Version.fromString("0.0.0")
 
     fun checkForUpdates(force: Boolean = false) {
@@ -51,7 +51,8 @@ object UpdateManager {
             conn.connectTimeout = 5000
             conn.readTimeout = 5000
             conn.inputStream.use {
-                Json.decodeFromString<GitHubRelease>(it.readBytes().decodeToString())
+                Json { ignoreUnknownKeys = true }
+                    .decodeFromString<GitHubRelease>(it.readBytes().decodeToString())
             }
         } catch (e: Exception) {
             System.err.println("Failed to fetch release info: ${e.message}")

@@ -30,6 +30,14 @@ repositories {
     mavenCentral()
 }
 
+tasks.named("shadowJar") {
+    archiveClassifier.set("all")
+    // Relocate Kotlin and other dependencies
+    relocate("kotlin", "bootstrapper.shadow.kotlin")
+    relocate("kotlinx", "bootstrapper.shadow.kotlinx")
+    relocate("org.jetbrains", "bootstrapper.shadow.org.jetbrains")
+}
+
 File testProjectDirectory = rootProject.getBuildDir().toPath().resolve("test-project").toFile()
 testProjectDirectory.mkdirs()
 

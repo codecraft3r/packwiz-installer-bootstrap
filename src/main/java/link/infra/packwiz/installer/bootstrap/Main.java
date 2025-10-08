@@ -20,17 +20,7 @@ import java.util.Properties;
  */
 public class Main {
 	public static void main(String[] args) {
-        boolean forceUpdate = false;
-        for (String arg : args) {
-            if (arg.equals("--version")) {
-                System.out.println("packwiz-installer-bootstrap version " + UpdateManager.INSTANCE.getCurrentVersion());
-                return;
-            }
-            if (arg.equals("--update")) {
-                forceUpdate = true;
-            }
-        }
-        UpdateManager.INSTANCE.checkForUpdates(forceUpdate);
+        UpdateManager.INSTANCE.checkForUpdates(false);
         // Check for chainload in Java System Properties
 		if (attemptChainload(System.getProperties(), args)) { return; }
 
