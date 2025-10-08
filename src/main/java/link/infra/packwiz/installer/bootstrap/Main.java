@@ -1,5 +1,7 @@
 package link.infra.packwiz.installer.bootstrap;
 
+import link.infra.packwiz.installer.bootstrap.update.UpdateManager;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,7 +20,18 @@ import java.util.Properties;
  */
 public class Main {
 	public static void main(String[] args) {
-		// Check for chainload in Java System Properties
+        boolean forceUpdate = false;
+        for (String arg : args) {
+            if (arg.equals("--version")) {
+                System.out.println("packwiz-installer-bootstrap version " + UpdateManager.INSTANCE.getCurrentVersion());
+                return;
+            }
+            if (arg.equals("--update")) {
+                forceUpdate = true;
+            }
+        }
+        UpdateManager.INSTANCE.checkForUpdates(forceUpdate);
+        // Check for chainload in Java System Properties
 		if (attemptChainload(System.getProperties(), args)) { return; }
 
 		// Try looking in packwiz-installer-bootstrap.properties
