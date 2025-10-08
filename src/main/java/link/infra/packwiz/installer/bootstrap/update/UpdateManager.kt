@@ -135,8 +135,8 @@ object UpdateManager {
         @echo off
         setlocal
         ping 127.0.0.1 -n 2 > nul
-        move /Y "%~2" "%~1.old"
-        move /Y "%~3" "%~1"
+        move /Y "%~1" "%~1.old"
+        move /Y "%~2" "%~1"
         java -jar "%~1" $jarArgsStr
         del "%~1.old"
         endlocal
