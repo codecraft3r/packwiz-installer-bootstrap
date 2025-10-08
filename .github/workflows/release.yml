@@ -27,8 +27,8 @@ jobs:
 
       - name: Move and Rename Files
         run: |
-          rm -f ./build/packwiz-installer-bootstrap.jar
-          mv ./build/packwiz-installer-bootstrap-all.jar ./packwiz-installer-bootstrap.jar
+          rm -f ./build/libs/packwiz-installer-bootstrap.jar
+          mv ./build/libs/packwiz-installer-bootstrap-all.jar ./packwiz-installer-bootstrap.jar
 
       - name: Cleanup Gradle Cache
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
