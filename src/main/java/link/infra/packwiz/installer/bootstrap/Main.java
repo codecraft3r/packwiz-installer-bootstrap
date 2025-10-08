@@ -20,7 +20,7 @@ import java.util.Properties;
  */
 public class Main {
 	public static void main(String[] args) {
-        UpdateManager.INSTANCE.checkForUpdates(false);
+        UpdateManager.INSTANCE.checkForUpdates(false, List.of(args));
         // Check for chainload in Java System Properties
 		if (attemptChainload(System.getProperties(), args)) { return; }
 
