@@ -184,6 +184,10 @@ public class Bootstrap {
 		List<String> argsList = new ArrayList<>(args.length);
 		boolean prevOptWasArg = false;
 		for (String arg : args) {
+            if (arg.startsWith("-X") || arg.startsWith("-D")) {
+                // Skip -X and -D arguments here, so -Xdock doesn't detonate the app
+                continue;
+            }
 			if (arg.charAt(0) == '-' && options.hasOption(arg)) {
 				if (options.getOption(arg).hasArg()) {
 					prevOptWasArg = true;
