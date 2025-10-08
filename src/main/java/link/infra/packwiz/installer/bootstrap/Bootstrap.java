@@ -19,7 +19,7 @@ import java.util.List;
 
 public class Bootstrap {
 
-	private static final String DEFAULT_UPDATE_URL = "https://api.github.com/repos/comp500/packwiz-installer/releases/latest";
+	private static final String DEFAULT_UPDATE_URL = "https://api.github.com/repos/codecraft3r/packwiz-installer/releases/latest";
 	public static final String JAR_NAME = "packwiz-installer.jar";
 
 	private static String updateURL = DEFAULT_UPDATE_URL;
