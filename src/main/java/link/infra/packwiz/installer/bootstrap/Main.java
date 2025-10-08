@@ -40,6 +40,7 @@ public class Main {
 		}
 
 		Bootstrap.init(args);
+        System.exit(0);
 	}
 
 	private static boolean attemptChainload(Properties props, String[] args) {
@@ -55,8 +56,10 @@ public class Main {
 
 			if (chainloadClass != null) {
 				ChainloadHandler.startChainloadClass(chainloadClass, bootstrapArgs, args);
+                System.exit(0);
 			} else {
 				ChainloadHandler.startChainloadJar(chainloadJar, bootstrapArgs, args);
+                System.exit(0);
 			}
 			return true;
 		}
