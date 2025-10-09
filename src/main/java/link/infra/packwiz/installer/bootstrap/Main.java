@@ -55,10 +55,10 @@ public class Main {
 			List<String> bootstrapArgs = Collections.emptyList();
 
 			if (chainloadClass != null) {
-				ChainloadHandler.startChainloadClass(chainloadClass, bootstrapArgs, args);
+				ChainloadHandler.startChainloadClass(chainloadClass, bootstrapArgs, ArgParser.filterArgs(args));
                 System.exit(0);
 			} else {
-				ChainloadHandler.startChainloadJar(chainloadJar, bootstrapArgs, args);
+				ChainloadHandler.startChainloadJar(chainloadJar, bootstrapArgs, ArgParser.filterArgs(args));
                 System.exit(0);
 			}
 			return true;

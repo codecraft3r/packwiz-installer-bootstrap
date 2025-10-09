@@ -14,8 +14,6 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Bootstrap {
 
@@ -36,6 +34,9 @@ public class Bootstrap {
 			System.exit(1);
 		}
 		
+		// Filter args to remove unrecognized options (like JVM options) before passing to packwiz-installer
+		String[] filteredArgs = ArgParser.filterArgs(args);
+
 		if (jarPath == null) {
 			jarPath = JAR_NAME;
 		}
@@ -52,7 +53,7 @@ public class Bootstrap {
 
 		if (skipUpdate) {
 			try {
-				LoadJAR.start(args, jarPath);
+				LoadJAR.start(filteredArgs, jarPath);
 			} catch (ClassNotFoundException e) {
 				showError(e, "packwiz-installer cannot be found, or there was an error loading it:");
 				System.exit(1);
@@ -70,7 +71,7 @@ public class Bootstrap {
 		}
 
 		try {
-			LoadJAR.start(args, jarPath);
+			LoadJAR.start(filteredArgs, jarPath);
 		} catch (Exception e) {
 			showError(e, "There was an error loading packwiz-installer (did it download properly?):");
 			System.exit(1);
@@ -135,16 +136,11 @@ public class Bootstrap {
 	}
 
 	private static void parseOptions(String[] args) throws ParseException {
-		Options options = new Options();
-		options.addOption(null, "bootstrap-update-url", true, "Github API URL for checking for updates");
-		options.addOption(null, "bootstrap-update-token", true, "Github API Access Token, for private repositories");
-		options.addOption(null, "bootstrap-no-update", false, "Don't update packwiz-installer");
-		options.addOption(null, "bootstrap-main-jar", true, "Location of the packwiz-installer JAR file");
-		options.addOption("g", "no-gui", false, "Don't display a GUI to show update progress");
-		options.addOption("h", "help", false, "Display this message");
-
+        Options options = ArgParser.options;
 		CommandLineParser parser = new DefaultParser();
-		CommandLine cmd = parser.parse(options, filterArgs(args, options));
+		// Filter args to only parse bootstrap options, but we need to do this carefully
+		// to avoid removing positional arguments that packwiz-installer needs
+		CommandLine cmd = parser.parse(options, ArgParser.filterArgs(args));
 
 		if (cmd.hasOption("bootstrap-main-jar")) {
 			jarPath = cmd.getOptionValue("bootstrap-main-jar");
@@ -176,33 +172,6 @@ public class Bootstrap {
 		if (cmd.hasOption("no-gui")) {
 			useGUI = false;
 		}
-	}
-
-	// Remove invalid arguments, because Commons CLI chokes on invalid arguments
-	// (that should be passed to packwiz-installer)
-	private static String[] filterArgs(String[] args, Options options) {
-		List<String> argsList = new ArrayList<>(args.length);
-		boolean prevOptWasArg = false;
-		for (String arg : args) {
-            if (arg.startsWith("-X") || arg.startsWith("-D")) {
-                // Skip -X and -D arguments here, so -Xdock doesn't detonate the app
-                continue;
-            }
-			if (arg.charAt(0) == '-' && options.hasOption(arg)) {
-				if (options.getOption(arg).hasArg()) {
-					prevOptWasArg = true;
-				}
-			} else {
-				if (prevOptWasArg) {
-					prevOptWasArg = false;
-				} else {
-					continue;
-				}
-			}
-			argsList.add(arg);
-		}
-
-		return argsList.toArray(new String[0]);
 	}
 
 	private static class Release {
