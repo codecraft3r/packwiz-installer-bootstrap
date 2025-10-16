@@ -47,56 +47,53 @@ public class Main {
 
 		// Custom CLI arg handling for pack.toml URL construction
 		String[] filteredArgs;
-		if (args.length == 1 && args[0].startsWith("http")) {
-			filteredArgs = new String[] { args[0] };
-		} else {
-			String ghUser = null, ghRepo = null, ghTag = null;
-			for (int i = 0; i < args.length; i++) {
-				if ("--user".equals(args[i]) && i + 1 < args.length) {
-					ghUser = args[++i];
-				} else if ("--repo".equals(args[i]) && i + 1 < args.length) {
-					ghRepo = args[++i];
-				} else if ("--tag".equals(args[i]) && i + 1 < args.length) {
-					ghTag = args[++i];
-				} else {
-					System.err.println("Error: Unknown or malformed argument: " + args[i]);
+		String ghUser = null, ghRepo = null, ghTag = null, urlArg = null;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].startsWith("http")) {
+				urlArg = args[i];
+				break; // Prefer positional URL if present
+			} else if ("--user".equals(args[i]) && i + 1 < args.length) {
+				ghUser = args[++i];
+			} else if ("--repo".equals(args[i]) && i + 1 < args.length) {
+				ghRepo = args[++i];
+			} else if ("--tag".equals(args[i]) && i + 1 < args.length) {
+				ghTag = args[++i];
+			} // Ignore all other arguments
+		}
+		if (urlArg != null) {
+			filteredArgs = new String[] { urlArg };
+		} else if (ghUser != null && ghRepo != null) {
+			if (ghTag == null) {
+				// Fetch latest release tag from GitHub
+				try {
+					String apiUrl = String.format("https://api.github.com/repos/%s/%s/releases/latest", ghUser, ghRepo);
+					HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
+					conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
+					conn.setRequestProperty("User-Agent", "packwiz-installer-bootstrap");
+					if (conn.getResponseCode() != 200) {
+						System.err.println("Error: Failed to fetch latest release from GitHub (HTTP " + conn.getResponseCode() + ")");
+						System.exit(1);
+						return;
+					}
+					try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+						JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+						ghTag = json.get("tag_name").getAsString();
+					}
+				} catch (Exception e) {
+					System.err.println("Error: Could not fetch latest release tag from GitHub: " + e.getMessage());
 					System.exit(1);
 					return;
 				}
 			}
-			if (ghUser != null && ghRepo != null) {
-				if (ghTag == null) {
-					// Fetch latest release tag from GitHub
-					try {
-						String apiUrl = String.format("https://api.github.com/repos/%s/%s/releases/latest", ghUser, ghRepo);
-						HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
-						conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
-						conn.setRequestProperty("User-Agent", "packwiz-installer-bootstrap");
-						if (conn.getResponseCode() != 200) {
-							System.err.println("Error: Failed to fetch latest release from GitHub (HTTP " + conn.getResponseCode() + ")");
-							System.exit(1);
-							return;
-						}
-						try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-							JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-							ghTag = json.get("tag_name").getAsString();
-						}
-					} catch (Exception e) {
-						System.err.println("Error: Could not fetch latest release tag from GitHub: " + e.getMessage());
-						System.exit(1);
-						return;
-					}
-				}
-				String packUrl = String.format(
-					"https://raw.githubusercontent.com/%s/%s/refs/tags/%s/pack.toml",
-					ghUser, ghRepo, ghTag
-				);
-				filteredArgs = new String[] { packUrl };
-			} else {
-				System.err.println("Error: Provide either one URL argument or --user <GH_USER> --repo <GH_REPO> [--tag <GH_TAG>]");
-				System.exit(1);
-				return;
-			}
+			String packUrl = String.format(
+				"https://raw.githubusercontent.com/%s/%s/refs/tags/%s/pack.toml",
+				ghUser, ghRepo, ghTag
+			);
+			filteredArgs = new String[] { packUrl };
+		} else {
+			System.err.println("Error: Provide either one URL argument or --user <GH_USER> --repo <GH_REPO> [--tag <GH_TAG>]");
+			System.exit(1);
+			return;
 		}
 		Bootstrap.init(filteredArgs);
         System.exit(0);
