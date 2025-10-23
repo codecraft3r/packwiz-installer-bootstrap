@@ -15,6 +15,7 @@ public class ArgParser {
         options.addOption(null, "bootstrap-main-jar", true, "Location of the packwiz-installer JAR file");
         options.addOption("g", "no-gui", false, "Don't display a GUI to show update progress");
         options.addOption("h", "help", false, "Display this message");
+        options.addOption("s", "side", true, "Side to install mods for (client/server)");
     }
 
     public static String[] filterArgs(String[] args) {

@@ -49,7 +49,8 @@ public class Main {
 		// Custom CLI arg handling for pack.toml URL construction and passthrough options
 		String[] filteredArgs;
 		String ghUser = null, ghRepo = null, ghTag = null, urlArg = null;
-		String sideName = null, gValue = null;
+		String sideName = null;
+		boolean noGui = false;
 
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("http")) {
@@ -64,12 +65,7 @@ public class Main {
 			} else if ("-s".equals(args[i]) && i + 1 < args.length) {
 				sideName = args[++i];
 			} else if ("-g".equals(args[i])) {
-				if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
-					gValue = args[++i];
-				} else {
-					// -g flag without value means just pass -g flag
-					gValue = "";
-				}
+				noGui = true;
 			} // Ignore all other arguments
 		}
 
@@ -115,9 +111,8 @@ public class Main {
 			outArgs.add("-s");
 			outArgs.add(sideName);
 		}
-		if (gValue != null) {
+		if (noGui) {
 			outArgs.add("-g");
-			outArgs.add(gValue);
 		}
 
 		filteredArgs = outArgs.toArray(new String[0]);
