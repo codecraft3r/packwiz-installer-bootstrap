@@ -14,6 +14,7 @@ import com.google.gson.JsonParser;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.ArrayList;
 
 /**
  * Main class+method for the bootstrapper.
@@ -45,23 +46,36 @@ public class Main {
 			throw new RuntimeException("Failed to read packwiz-installer-bootstrap.properties", e);
 		}
 
-		// Custom CLI arg handling for pack.toml URL construction
+		// Custom CLI arg handling for pack.toml URL construction and passthrough options
 		String[] filteredArgs;
 		String ghUser = null, ghRepo = null, ghTag = null, urlArg = null;
+		String sideName = null, gValue = null;
+
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith("http")) {
 				urlArg = args[i];
-				break; // Prefer positional URL if present
+				// Don't break - continue parsing for -s and -g flags
 			} else if ("--user".equals(args[i]) && i + 1 < args.length) {
 				ghUser = args[++i];
 			} else if ("--repo".equals(args[i]) && i + 1 < args.length) {
 				ghRepo = args[++i];
 			} else if ("--tag".equals(args[i]) && i + 1 < args.length) {
 				ghTag = args[++i];
+			} else if ("-s".equals(args[i]) && i + 1 < args.length) {
+				sideName = args[++i];
+			} else if ("-g".equals(args[i])) {
+				if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
+					gValue = args[++i];
+				} else {
+					// -g flag without value means just pass -g flag
+					gValue = "";
+				}
 			} // Ignore all other arguments
 		}
+
+		List<String> outArgs = new ArrayList<>();
 		if (urlArg != null) {
-			filteredArgs = new String[] { urlArg };
+			outArgs.add(urlArg);
 		} else if (ghUser != null && ghRepo != null) {
 			if (ghTag == null) {
 				// Fetch latest release tag from GitHub
@@ -89,12 +103,24 @@ public class Main {
 				"https://raw.githubusercontent.com/%s/%s/refs/tags/%s/pack.toml",
 				ghUser, ghRepo, ghTag
 			);
-			filteredArgs = new String[] { packUrl };
+			outArgs.add(packUrl);
 		} else {
 			System.err.println("Error: Provide either one URL argument or --user <GH_USER> --repo <GH_REPO> [--tag <GH_TAG>]");
 			System.exit(1);
 			return;
 		}
+
+		// Append optional passthrough flags
+		if (sideName != null) {
+			outArgs.add("-s");
+			outArgs.add(sideName);
+		}
+		if (gValue != null) {
+			outArgs.add("-g");
+			outArgs.add(gValue);
+		}
+
+		filteredArgs = outArgs.toArray(new String[0]);
 		Bootstrap.init(filteredArgs);
         System.exit(0);
 	}
