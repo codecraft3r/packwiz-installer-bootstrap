@@ -69,6 +69,13 @@ public class Main {
 			} // Ignore all other arguments
 		}
 
+		// Validate mutually exclusive options
+		if (urlArg != null && (ghUser != null || ghRepo != null || ghTag != null)) {
+			System.err.println("Error: Cannot specify both a URL and GitHub parameters (--user/--repo/--tag)");
+			System.exit(1);
+			return;
+		}
+
 		List<String> outArgs = new ArrayList<>();
 		if (urlArg != null) {
 			outArgs.add(urlArg);
